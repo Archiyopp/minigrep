@@ -7,15 +7,17 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn build(args: &[String]) -> Result<Config, &'static str> {
-        if args.len() < 3 {
-            return Err("Not enough arguments");
-        }
+    pub fn build(mut args: impl Iterator<Item = String>) -> Result<Config, &'static str> {
+        args.next();
+        let Some(query) = args.next() else {
+            return Err("Query arg not supplied");
+        };
 
-        let query = args[1].clone();
-        let file_path = args[2].clone();
+        let Some(file_path) = args.next() else {
+            return Err("File path arg not supplied");
+        };
 
-        let ignore_case = env::var("IGNORE_CASE").is_ok() || args.get(3).is_some();
+        let ignore_case = args.next().is_some() || env::var("IGNORE_CASE").is_ok();
 
         Ok(Config {
             query,
